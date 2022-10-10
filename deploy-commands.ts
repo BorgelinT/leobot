@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v10';
+import { REST, Routes } from 'discord.js';
 import config from './config.json';
 
 const commands = [];
@@ -17,5 +16,5 @@ for (const file of commandFiles) {
 const rest = new REST({ version: '10' }).setToken(config.token);
 
 rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: commands })
-	.then(() => console.log('Successfully registered application commands.'))
+	.then(() => console.log('Komennot ladattu!'))
 	.catch(console.error);
