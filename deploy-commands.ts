@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { REST, Routes } from 'discord.js';
-import config from './config.json';
+import { clientId, guildId, token } from './config.json';
 
 const commands = [];
 const commandsPath = path.join(__dirname, 'commands');
@@ -13,8 +13,8 @@ for (const file of commandFiles) {
 	commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: '10' }).setToken(config.token);
+const rest = new REST({ version: '10' }).setToken(token);
 
-rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: commands })
+rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
 	.then(() => console.log('Komennot ladattu!'))
 	.catch(console.error);
