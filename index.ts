@@ -1,20 +1,24 @@
-import { Intents, Client, Constants, Collection } from 'discord.js'
+import { GatewayIntentBits, Partials, Client, Constants, Collection } from 'discord.js'
 import path from 'path';
 import fs from 'fs';
 import config from './config.json';
+// import rolehandler from '/events';
 
 const client = new Client({
 	intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
   ],
-	partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+	partials: [ Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+
+//events
+// let roleHandler = new roleHandler();
 
 for (const file of commandFiles) {
 	const filePath = path.join(commandsPath, file);
