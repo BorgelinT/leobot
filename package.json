@@ -19,9 +19,8 @@
   },
   "homepage": "https://github.com/Thoumey/leobot#readme",
   "dependencies": {
-    "@discordjs/rest": "^1.0.0",
     "discord-api-types": "^0.36.3",
-    "discord.js": "^13.8.1",
+    "discord.js": "^14.6.0",
     "dotenv": "^16.0.1",
     "eslint": "^8.7.0",
     "nodemon": "^2.0.18"
