@@ -1,63 +1,103 @@
-import { GatewayIntentBits, Partials, Client, Constants, Collection } from 'discord.js'
-import path from 'path';
-import fs from 'fs';
-import config from './config.json';
+import { GatewayIntentBits, Partials, Client, Constants, Collection, GuildMember, APIInteractionGuildMember, GuildMemberRoleManager, ChannelType, TextChannel, MessageReaction, Interaction, CommandInteraction, ButtonInteraction } from 'discord.js'
+import { readdirSync } from "fs";
+import { join } from "path";
+import { emojis, roles, token, testServerId, guildId, channelId } from './config.json';
+import { SlashCommand } from './types';
 // import rolehandler from '/events';
 
-const client = new Client({
+export const client = new Client({
 	intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent
   ],
 	partials: [ Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
-client.commands = new Collection();
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+const rolenames = Object.keys(roles);
+const emojinames = Object.keys(emojis);
 
-//events
-// let roleHandler = new roleHandler();
+const handlersDir = join(__dirname, "./handlers")
+readdirSync(handlersDir).forEach(handler => {
+    require(`${handlersDir}/${handler}`)(client)
+})
 
-for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
-	const command = require(filePath);
-	// Set a new item in the Collection
-	// With the key as the command name and the value as the exported module
-	client.commands.set(command.data.name, command);
-}
+let message!: any;
 
 client.on('ready', () => {
-  console.log('Client ready')
-  const testGuildId = '928618312487829534';
-  const testGuild = client.guilds.cache.get(testGuildId);
-  let commands;
+  console.log('Kirjauduttu sisään käyttäjänä ' + client.user?.tag);
+  // etsi serveri komentojen testaamista varten
+  const guild = client.guilds.cache.get(guildId);
 
-  if (testGuild) {
-    commands = testGuild.commands;
-  } else {
-    commands = client.application?.commands;
-  }
+  if (guild) guild.slashCommands = new Collection<string, SlashCommand>();
+  client.slashCommands = new Collection<string, SlashCommand>()
 
-  commands?.create({
-    name: 'ping',
-    description: 'replies with pong!!',
+
+  // etsi roolikanava
+  const channel = client.channels.cache.get(channelId);
+  if (channel == null) return;
+  // type guard
+  if (!((channel): channel is TextChannel => channel.type === ChannelType.GuildText)(channel)) return;
+  message = channel.messages.fetch('983144971366461490').then(message => {
+    // create filter for which emojis to collect
+    const filter: any = (reaction: MessageReaction, user: GuildMember) => {
+        return emojinames.includes(reaction.emoji.name!) && user.id !== message.author.id;
+    };
+    // init reaction collector
+
+    const collector = message.createReactionCollector({ filter });
+    console.log('Aloitetaan reaktioiden kuuntelu ...')
+      collector.on('collect', (reaction, user) => {
+        console.log(`Saatiin reaktio ${reaction.emoji.name} käyttäjältä ${user.tag}`);
+        if (reaction.emoji.name == null) return;
+        let emojiname = reaction.emoji.name;
+        message.guild.members.fetch(user.id).then(member => {
+          if (emojinames.includes(emojiname)) {
+            let roleid = roles[emojiname];
+            console.log(roleid);
+
+            console.log(`lisätään käyttäjälle ${user.tag} rooli ${roleid}`);
+            member.roles.add(roleid);
+            
+          }
+        });
+      });
   })
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isCommand()) {
-    return;
+  if (interaction.isCommand()) {
+    console.log('command')
+    handleCommand(interaction);
   }
-  const { commandName, options } = interaction;
+  if (interaction.isButton()) {
+    handleButton(interaction);
+  }
+ 
+})
 
+function handleCommand(interaction: CommandInteraction) {
+  const { commandName, options } = interaction;
   if (commandName === 'ping') {
     interaction.reply({
       content: 'pong',
       ephemeral: true, // only shown to command user
     })
   }
-})
+}
 
-client.login(config.token);
+function handleButton(interaction: ButtonInteraction) {
+  if (!interaction.member) return;
+    const member: GuildMember | APIInteractionGuildMember = interaction.member;
+    if (!member) return;
+    if (!interaction.isButton()) return;
+    interaction.deferUpdate();
+    let rolesmanager = interaction.member.roles as GuildMemberRoleManager;
+    for (let i = 0; i < emojinames.length; i++) {
+      rolesmanager.remove(roles[emojinames[i]]);
+    }
+    return;
+}
+
+client.login(token);

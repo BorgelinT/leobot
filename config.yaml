@@ -1,0 +1,27 @@
+{
+	"clientId": "123456789012345678", # bot id, luo testibotti täältä -> https://discord.com/developers/applications
+	"guildId": "123456789012345678", # serverin id (goon club)
+	"testServerId" : "123456789012345678", # luo uusi serveri testausta varten ja kutsu luomasi botti sinne
+	"token": "discord api token", # kopioi botin tokeni -> https://discord.com/developers/applications
+  # goon club rooli emotet
+	"roles": {
+		"beeangery":"982424141175083028", # lol
+		"OwOmen":"982423598335672330", # rant
+		"Angery":"982424313808420914", # apex
+		"Borpagun":"982424395282808842", # kynäri
+		"nobuild":"982425150974754847", # fortnite
+		"highfive":"982425212228345917", # warframe
+		"peepoparty":"982425322916024350", # jaakko boxi yms.
+		"trumpW":"982424494163513344" # rust
+	},
+	"emojis" : {
+		"beeangery":":beeangery:699593773553811476",
+		"OwOmen":":OwOmen:982378343812968468",
+		"Angery":":Angery:982354770780110878",
+		"Borpagun":":Borpagun:982378359306723348",
+		"nobuild":":nobuild:982378288800473165",
+		"highfive":":highfive:982378228733845524",
+		"peepoparty":":peepoparty:982378256814702603",
+		"trumpW":":trumpW:261529841545904130"
+	}
+}
